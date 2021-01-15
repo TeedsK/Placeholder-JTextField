@@ -227,16 +227,19 @@ public class PlaceholderTextField extends JTextField implements MouseListener, F
      * Watches out for a control V (pasting text)
      */
     public void keyPressed(KeyEvent e) {
-        controlActive = e.isControlDown();
-        if(controlActive && e.getKeyCode() == KeyEvent.VK_V) {
-            setText("");
-        } else if(getText().equals(OriginalPlaceholder) && otherChecks(e)) {
-            e.consume();
-        } else if(getText().equals(OriginalPlaceholder) && (arrowKeys(e))) {
-            e.consume();
-            setText(OriginalPlaceholder);
-            setCaretPosition(0);
+        if(getText().equals(OriginalPlaceholder)) {
+            controlActive = e.isControlDown();
+            if(controlActive && e.getKeyCode() == KeyEvent.VK_V) {
+                setText("");
+            } else if(otherChecks(e)) {
+                e.consume();
+            } else if(arrowKeys(e)) {
+                e.consume();
+                setText(OriginalPlaceholder);
+                setCaretPosition(0);
+            }
         }
+        
     }
 
 
