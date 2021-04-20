@@ -1,4 +1,3 @@
-
 import javax.swing.JTextField;
 import java.awt.Color;
 import java.awt.event.MouseEvent;
@@ -23,12 +22,12 @@ public class PlaceholderTextField extends JTextField implements MouseListener, F
     boolean focused = false;
     String OriginalPlaceholder = "";
     int placeHolderTextAlpha = 100;
+    int maximumPlaceHolderAlpha = 190;
     int minimumTextAlpha = 170;
     int maximumTextAlpha = 255;
     boolean controlActive = false;
     int incrementAmount = 10;
     Color foreground = new Color(0, 0, 0);
-
     /**
      * Creates the placeholder object
      * @param placeHolder String for the desired placeholder text
@@ -105,6 +104,16 @@ public class PlaceholderTextField extends JTextField implements MouseListener, F
     }
 
     /**
+     * Change the value of the placeholder
+     * @param text the replaced placeholder text
+     */
+    public void setPlaceholderText(String text) {
+        this.OriginalPlaceholder = text;
+        setText(text);
+        setForeground(new Color(foreground.getRed(), foreground.getGreen(), foreground.getBlue(), placeHolderTextAlpha));
+    }
+
+    /**
      * Change the font of the JTextField
      * @param location The location of the Font File
      * @param size The size of the font
@@ -123,7 +132,11 @@ public class PlaceholderTextField extends JTextField implements MouseListener, F
      * Increases the alpha of the JTextField to the maximum possible
      */
     public void IncreaseTextAlphaToMaximum() {
-        changeAlphaValue(true, maximumTextAlpha);
+        if(getText().equals(OriginalPlaceholder)) {
+            changeAlphaValue(true, maximumPlaceHolderAlpha);
+        } else {
+            changeAlphaValue(true, maximumTextAlpha);
+        }
     }
 
     /**
@@ -165,28 +178,30 @@ public class PlaceholderTextField extends JTextField implements MouseListener, F
      * @param increase boolean if you are increasing alpha or decreasing
      * @param wantedAlpha the desired alpha amount
      */
-    public void changeAlphaValue(boolean increase, int wantedAlpha) {
-        Thread t = new Thread() {
-            public void run() {
-                focused = increase;
-                while (focused == increase && TextAlpha != wantedAlpha) {
-                    if (increase) {
-                        TextAlpha += incrementAmount;
-                    } else {
-                        TextAlpha -= incrementAmount;
-                    }
-                    if (Math.abs(wantedAlpha - TextAlpha) <= 10) {
-                        TextAlpha = wantedAlpha;
-                    }
-                    setForeground(new Color(foreground.getRed(), foreground.getGreen(), foreground.getBlue(), TextAlpha));
-                    try {
-                        sleep(7);
-                    } catch (Exception err1) {
+    public void changeAlphaValue(final boolean increase, final int wantedAlpha) {
+        if(TextAlpha != wantedAlpha) {
+            Thread t = new Thread() {
+                public void run() {
+                    focused = increase;
+                    while (focused == increase && TextAlpha != wantedAlpha) {
+                        if(wantedAlpha < TextAlpha) {
+                            TextAlpha -= incrementAmount;
+                        } else if(wantedAlpha > TextAlpha) {
+                            TextAlpha += incrementAmount;
+                        }
+                        if (Math.abs(wantedAlpha - TextAlpha) <= 10) {
+                            TextAlpha = wantedAlpha;
+                        }
+                        setForeground(new Color(foreground.getRed(), foreground.getGreen(), foreground.getBlue(), TextAlpha));
+                        try {
+                            sleep(7);
+                        } catch (Exception err1) {
+                        }
                     }
                 }
-            }
-        };
-        t.start();
+            };
+            t.start();
+        }
     }
 
     @Override
@@ -212,12 +227,13 @@ public class PlaceholderTextField extends JTextField implements MouseListener, F
      */
     @Override
     public void keyTyped(KeyEvent e) {
-        if (getText().equals(OriginalPlaceholder) && !otherChecks(e)) {
+        if(getText().equals(OriginalPlaceholder) && !otherChecks(e)) {
             setText("");
         } else if (getText().equals("")) {
             setText(OriginalPlaceholder);
             setCaretPosition(0);
         }
+        IncreaseTextAlphaToMaximum();
     }
 
     @Override
@@ -239,7 +255,6 @@ public class PlaceholderTextField extends JTextField implements MouseListener, F
                 setCaretPosition(0);
             }
         }
-        
     }
 
 
